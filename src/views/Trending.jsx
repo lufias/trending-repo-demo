@@ -1,7 +1,33 @@
+/**
+ * Trending Component
+ * 
+ * This component displays a list of trending GitHub repositories with infinite scroll functionality.
+ * It handles rate limiting, error states, and loading states while fetching data from the GitHub API.
+ * 
+ * Key Features:
+ * 1. Rate Limit Management
+ *    - Tracks GitHub API rate limit status
+ *    - Shows countdown timer when rate limited
+ *    - Auto-retries when rate limit expires
+ * 
+ * 2. Infinite Scroll
+ *    - Uses IntersectionObserver to detect when user reaches bottom
+ *    - Loads more repositories automatically
+ *    - Handles loading states and timeouts
+ * 
+ * 3. Data Management
+ *    - Initial data fetch on component mount
+ *    - Manages loading states (initial load and loading more)
+ *    - Handles error states and retry logic
+ * 
+ * 4. UI Components
+ *    - RateLimitErrorModal: Shows rate limit error with countdown
+ *    - TrendingItem: Individual repository display
+ *    - Loading indicators for initial load and loading more
+ */
+
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { 
   fetchTrendingRepos, 
   selectAllRepos, 
@@ -13,9 +39,11 @@ import {
   selectRateLimitResetTime,
   clearError
 } from '../store/slices/trendingSlice';
-import RateLimitErrorModal from '../components/RateLimitErrorModal';
+import RateLimitErrorModal from '../components/Trending/RateLimitErrorModal';
+import TrendingItem from '../components/Trending/TrendingItem';
 
 function Trending() {
+  // Redux state management
   const dispatch = useDispatch();
   const repos = useSelector(selectAllRepos);
   const status = useSelector(selectReposStatus);
@@ -24,18 +52,33 @@ function Trending() {
   const currentPage = useSelector(selectCurrentPage);
   const lastAttemptedPage = useSelector(selectLastAttemptedPage);
   const rateLimitResetTime = useSelector(selectRateLimitResetTime);
-  const observer = useRef();
-  const loadingTimeout = useRef();
-  const initialFetchDone = useRef(false);
+
+  // Refs for managing component lifecycle and state
+  const observer = useRef(); // IntersectionObserver instance
+  const loadingTimeout = useRef(); // Timeout for loading more items
+  const initialFetchDone = useRef(false); // Flag for initial data fetch
+
+  // Local state management
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
 
+  /**
+   * Handles retry logic when rate limit expires
+   * Clears error state and attempts to fetch data again
+   */
   const handleRetry = useCallback(() => {
     dispatch(clearError());
     dispatch(fetchTrendingRepos(lastAttemptedPage));
   }, [dispatch, lastAttemptedPage]);
 
-  // Update countdown timer
+  /**
+   * Rate Limit Timer Effect
+   * 
+   * Manages the countdown timer for rate limit expiration
+   * - Updates timeLeft state every second
+   * - Auto-retries when timer reaches 0
+   * - Cleans up interval on unmount
+   */
   useEffect(() => {
     if (!rateLimitResetTime) {
       setTimeLeft(null);
@@ -47,7 +90,6 @@ function Trending() {
       const timeRemaining = Math.max(0, Math.ceil((rateLimitResetTime - now) / 1000));
       setTimeLeft(timeRemaining);
 
-      // Auto retry when timer reaches 0
       if (timeRemaining === 0) {
         handleRetry();
       }
@@ -59,7 +101,12 @@ function Trending() {
     return () => clearInterval(timer);
   }, [rateLimitResetTime, handleRetry]);
 
-  // Initial fetch
+  /**
+   * Initial Data Fetch Effect
+   * 
+   * Fetches first page of trending repositories on component mount
+   * Uses a ref to ensure it only runs once
+   */
   useEffect(() => {
     if (!initialFetchDone.current) {
       initialFetchDone.current = true;
@@ -67,28 +114,41 @@ function Trending() {
     }
   }, [dispatch]);
 
-  // Infinite scroll implementation
+  /**
+   * Infinite Scroll Implementation
+   * 
+   * Uses IntersectionObserver to detect when user reaches bottom of list
+   * - Creates observer instance
+   * - Handles loading more items with delay
+   * - Manages loading states
+   * - Cleans up observer on unmount
+   */
   const lastRepoElementRef = useCallback(node => {
     if (status === 'loading' || isLoadingMore || status === 'failed') return;
     if (observer.current) observer.current.disconnect();
+    
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
-        // Clear any existing timeout
         if (loadingTimeout.current) {
           clearTimeout(loadingTimeout.current);
         }
         setIsLoadingMore(true);
-        // Add a small delay before loading more items
         loadingTimeout.current = setTimeout(() => {
           dispatch(fetchTrendingRepos(currentPage));
           setIsLoadingMore(false);
         }, 500);
       }
     });
+    
     if (node) observer.current.observe(node);
   }, [status, hasMore, dispatch, isLoadingMore, currentPage]);
 
-  // Cleanup timeout and observer on unmount
+  /**
+   * Cleanup Effect
+   * 
+   * Cleans up timeouts and observer on component unmount
+   * Prevents memory leaks and unnecessary operations
+   */
   useEffect(() => {
     return () => {
       if (loadingTimeout.current) {
@@ -100,12 +160,14 @@ function Trending() {
     };
   }, []);
 
+  // Show loading state for initial fetch
   if (status === 'loading' && repos.length === 0) {
     return <div className="p-4">Loading trending repositories...</div>;
   }
 
   return (
     <div className="relative">
+      {/* Rate Limit Error Modal */}
       {error && (
         <RateLimitErrorModal 
           error={error}
@@ -114,48 +176,18 @@ function Trending() {
         />
       )}
 
+      {/* Main Content Area */}
       <div className={`p-4 space-y-4 pb-20 ${error ? 'pointer-events-none' : ''}`}>
+        {/* Repository List */}
         {repos.map((repo, index) => (
-          <div 
-            key={repo.id} 
-            ref={index === repos.length - 1 ? lastRepoElementRef : null}
-            className="bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 p-4"
-          >
-            <div className="flex items-start gap-4">
-              <img 
-                src={repo.owner.avatar_url} 
-                alt={repo.owner.login}
-                className="w-12 h-12 rounded-full"
-              />
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-semibold text-blue-600">
-                      <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                        {repo.full_name}
-                      </a>
-                    </h3>
-                    <p className="text-gray-600 mt-1">{repo.description || 'No description available'}</p>
-                  </div>
-                  <div className="flex items-center text-gray-500">
-                    <FontAwesomeIcon icon={faStar} className="mr-1" />
-                    <span>{repo.stargazers_count.toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {repo.topics?.slice(0, 3).map(topic => (
-                    <span 
-                      key={topic} 
-                      className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-sm"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <TrendingItem
+            key={repo.id}
+            repo={repo}
+            lastRepoElementRef={index === repos.length - 1 ? lastRepoElementRef : null}
+          />
         ))}
+        
+        {/* Loading More Indicator */}
         {isLoadingMore && (
           <div className="p-4 text-center text-gray-500 mb-20">Loading more repositories...</div>
         )}
