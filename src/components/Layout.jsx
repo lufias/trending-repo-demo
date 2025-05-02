@@ -1,8 +1,6 @@
 import { Link, useLocation, Routes, Route } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar, faCog } from '@fortawesome/free-solid-svg-icons';
-import Trending from '../views/Trending';
-import Settings from '../views/Settings';
+import { routes } from '../config/routes.jsx';
 
 function Layout() {
   const location = useLocation();
@@ -21,32 +19,32 @@ function Layout() {
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
           <Routes>
-            <Route path="/" element={<Trending />} />
-            <Route path="/settings" element={<Settings />} />
+            {routes.map((route) => (
+              <Route key={route.path} path={route.path} element={route.element} />
+            ))}
           </Routes>
         </main>
 
         {/* Bottom Navigation */}
         <nav className="bg-white border-t sticky bottom-0 z-10">
           <div className="flex justify-around">
-            <Link 
-              to="/" 
-              className={`flex flex-col items-center p-4 flex-1 ${
-                location.pathname === '/' ? 'text-blue-500' : 'text-gray-500'
-              }`}
-            >
-              <FontAwesomeIcon icon={faStar} className="text-xl" />
-              <span className="text-sm mt-1">Trending</span>
-            </Link>
-            <Link 
-              to="/settings" 
-              className={`flex flex-col items-center p-4 flex-1 ${
-                location.pathname === '/settings' ? 'text-blue-500' : 'text-gray-500'
-              }`}
-            >
-              <FontAwesomeIcon icon={faCog} className="text-xl" />
-              <span className="text-sm mt-1">Settings</span>
-            </Link>
+            {routes.map((route) => (
+              <Link 
+                key={route.path}
+                to={route.path} 
+                className={`flex flex-col items-center p-4 flex-1 ${
+                  location.pathname === route.path ? 'text-blue-500' : 'text-gray-500'
+                }`}
+              >
+                {route.icon && (
+                  <FontAwesomeIcon 
+                    icon={route.icon} 
+                    className="text-xl" 
+                  />
+                )}
+                <span className="text-sm mt-1">{route.label}</span>
+              </Link>
+            ))}
           </div>
         </nav>
       </div>
