@@ -4,13 +4,21 @@ import axios from 'axios';
 // Async thunk for fetching trending repositories
 export const fetchTrendingRepos = createAsyncThunk(
   'trending/fetchTrendingRepos',
-  async (page = 1, { rejectWithValue }) => {
+  async (page = 1, { rejectWithValue, getState }) => {
     try {
       const response = await axios.get(
         `https://api.github.com/search/repositories?q=created:>2024-07-15&sort=stars&order=desc&page=${page}`
       );
+
+      // Get existing repos from state
+      const existingRepos = getState().trending.allRepos;
+      const existingIds = new Set(existingRepos.map(repo => repo.id));
+
+      // Filter out duplicates from new items
+      const newItems = response.data.items.filter(item => !existingIds.has(item.id));
+
       return {
-        items: response.data.items,
+        items: newItems,
         page: page
       };
     } catch (error) {
