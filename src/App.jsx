@@ -1,3 +1,7 @@
+import './fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+
 function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -6,7 +10,8 @@ function App() {
         <p className="text-gray-600 mb-6">
           This is a simple card layout built with Tailwind CSS.
         </p>
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center gap-2">
+          <FontAwesomeIcon icon={faHeart} />
           Learn More
         </button>
       </div>
