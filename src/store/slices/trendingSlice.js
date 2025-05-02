@@ -4,15 +4,19 @@ import axios from 'axios';
 // Async thunk for fetching trending repositories
 export const fetchTrendingRepos = createAsyncThunk(
   'trending/fetchTrendingRepos',
-  async () => {
-    const response = await axios.get('https://api.github.com/search/repositories?q=created:>2024-07-15&sort=stars&order=desc');
-    return response.data.items;
+  async (page = 1) => {
+    const response = await axios.get(
+      `https://api.github.com/search/repositories?q=created:>2024-07-15&sort=stars&order=desc&page=${page}`
+    );
+    return {
+      items: response.data.items,
+      page: page
+    };
   }
 );
 
 const initialState = {
   allRepos: [], // Store all fetched repos
-  displayedRepos: [], // Currently displayed repos
   currentPage: 1,
   status: 'idle',
   error: null
@@ -22,12 +26,11 @@ const trendingSlice = createSlice({
   name: 'trending',
   initialState,
   reducers: {
-    loadMoreRepos: (state) => {
-      const nextPage = state.currentPage + 1;
-      const startIndex = 0;
-      const endIndex = nextPage * 10;
-      state.displayedRepos = state.allRepos.slice(startIndex, endIndex);
-      state.currentPage = nextPage;
+    resetRepos: (state) => {
+      state.allRepos = [];
+      state.currentPage = 1;
+      state.status = 'idle';
+      state.error = null;
     }
   },
   extraReducers: (builder) => {
@@ -37,9 +40,8 @@ const trendingSlice = createSlice({
       })
       .addCase(fetchTrendingRepos.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.allRepos = action.payload;
-        state.displayedRepos = action.payload.slice(0, 10);
-        state.currentPage = 1;
+        state.allRepos = [...state.allRepos, ...action.payload.items];
+        state.currentPage = action.payload.page + 1;
       })
       .addCase(fetchTrendingRepos.rejected, (state, action) => {
         state.status = 'failed';
@@ -48,14 +50,13 @@ const trendingSlice = createSlice({
   }
 });
 
-export const { loadMoreRepos } = trendingSlice.actions;
+export const { resetRepos } = trendingSlice.actions;
 
 // Export selectors
-export const selectDisplayedRepos = (state) => state.trending.displayedRepos;
 export const selectAllRepos = (state) => state.trending.allRepos;
 export const selectReposStatus = (state) => state.trending.status;
 export const selectReposError = (state) => state.trending.error;
-export const selectHasMoreRepos = (state) => 
-  state.trending.displayedRepos.length < state.trending.allRepos.length;
+export const selectCurrentPage = (state) => state.trending.currentPage;
+export const selectHasMoreRepos = (state) => state.trending.allRepos.length > 0;
 
 export default trendingSlice.reducer; 

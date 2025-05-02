@@ -4,26 +4,27 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { 
   fetchTrendingRepos, 
-  loadMoreRepos,
-  selectDisplayedRepos, 
+  selectAllRepos, 
   selectReposStatus, 
   selectReposError,
-  selectHasMoreRepos
+  selectHasMoreRepos,
+  selectCurrentPage
 } from '../store/slices/trendingSlice';
 
 function Trending() {
   const dispatch = useDispatch();
-  const repos = useSelector(selectDisplayedRepos);
+  const repos = useSelector(selectAllRepos);
   const status = useSelector(selectReposStatus);
   const error = useSelector(selectReposError);
   const hasMore = useSelector(selectHasMoreRepos);
+  const currentPage = useSelector(selectCurrentPage);
   const observer = useRef();
   const loadingTimeout = useRef();
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Initial fetch
   useEffect(() => {
-    dispatch(fetchTrendingRepos());
+    dispatch(fetchTrendingRepos(1));
   }, [dispatch]);
 
   // Infinite scroll implementation
@@ -37,21 +38,24 @@ function Trending() {
           clearTimeout(loadingTimeout.current);
         }
         setIsLoadingMore(true);
-        // Add a 2 second delay before loading more items
+        // Add a small delay before loading more items
         loadingTimeout.current = setTimeout(() => {
-          dispatch(loadMoreRepos());
+          dispatch(fetchTrendingRepos(currentPage));
           setIsLoadingMore(false);
         }, 500);
       }
     });
     if (node) observer.current.observe(node);
-  }, [status, hasMore, dispatch, isLoadingMore]);
+  }, [status, hasMore, dispatch, isLoadingMore, currentPage]);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeout and observer on unmount
   useEffect(() => {
     return () => {
       if (loadingTimeout.current) {
         clearTimeout(loadingTimeout.current);
+      }
+      if (observer.current) {
+        observer.current.disconnect();
       }
     };
   }, []);
@@ -61,7 +65,17 @@ function Trending() {
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>;
+    return (
+      <div className="p-4">
+        <div className="text-red-500 mb-4">Error: {error}</div>
+        <button 
+          onClick={() => dispatch(fetchTrendingRepos(1))}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -108,7 +122,7 @@ function Trending() {
         </div>
       ))}
       {isLoadingMore && (
-        <div className="p-4 text-center text-gray-500 mb-20">Loading more...</div>
+        <div className="p-4 text-center text-gray-500 mb-20">Loading more repositories...</div>
       )}
     </div>
   );
