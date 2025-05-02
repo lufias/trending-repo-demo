@@ -1,4 +1,5 @@
 import { Link, useLocation, Routes, Route } from 'react-router-dom';
+import { Suspense } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { routes } from '../config/routes.jsx';
 
@@ -18,11 +19,17 @@ function Layout() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
-          <Routes>
-            {routes.map((route) => (
-              <Route key={route.path} path={route.path} element={route.element} />
-            ))}
-          </Routes>
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+          }>
+            <Routes>
+              {routes.map((route) => (
+                <Route key={route.path} path={route.path} element={route.element} />
+              ))}
+            </Routes>
+          </Suspense>
         </main>
 
         {/* Bottom Navigation */}
