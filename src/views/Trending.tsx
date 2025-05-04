@@ -26,7 +26,7 @@
  *    - Loading indicators for initial load and loading more
  */
 
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
 import { AppDispatch } from '../store';
@@ -59,6 +59,7 @@ function Trending() {
   // Local state management
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const virtuosoRef = useRef<any>(null);
 
   /**
    * Handles retry logic when rate limit expires
@@ -114,6 +115,34 @@ function Trending() {
     }
   }, [status, hasMore, dispatch, currentPage]);
 
+  /**
+   * Handle keyboard navigation
+   */
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!virtuosoRef.current || error) return;
+
+    const scrollAmount = 300; // pixels to scroll per key press
+
+    switch (e.key) {
+      case 'ArrowUp':
+        virtuosoRef.current.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+        break;
+      case 'ArrowDown':
+        virtuosoRef.current.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+        break;
+      default:
+        return;
+    }
+  }, [error]);
+
+  /**
+   * Add keyboard event listener
+   */
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
   // Show loading state for initial fetch
   if (status === 'loading' && repos.length === 0) {
     return <div className="p-4">Loading trending repositories...</div>;
@@ -141,6 +170,7 @@ function Trending() {
       {/* Main Content Area */}
       <div className={`p-4 virtuoso-scroll-hide ${error ? 'pointer-events-none' : ''}`} style={{ height: `calc(100vh - 100px)` }}>
         <Virtuoso
+          ref={virtuosoRef}
           data={repos}
           itemContent={(_index, repo) => <TrendingItem repo={repo} />}
           endReached={() => {
