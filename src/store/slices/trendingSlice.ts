@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import moment from 'moment';
 
-interface Repository {
+export interface Repository {
   id: number;
   name: string;
   full_name: string;

@@ -28,7 +28,7 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Virtuoso } from 'react-virtuoso';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { AppDispatch } from '../store';
 import { 
   fetchTrendingRepos, 
@@ -39,7 +39,8 @@ import {
   selectCurrentPage,
   selectLastAttemptedPage,
   selectRateLimitResetTime,
-  clearError
+  clearError,
+  Repository
 } from '../store/slices/trendingSlice.ts';
 import RateLimitErrorModal from '../components/Trending/RateLimitErrorModal';
 import TrendingItem from '../components/Trending/TrendingItem';
@@ -48,23 +49,23 @@ import Toast from '../components/Toast';
 function Trending() {
   // Redux state management
   const dispatch = useDispatch<AppDispatch>();
-  const repos = useSelector(selectAllRepos);
-  const status = useSelector(selectReposStatus);
-  const error = useSelector(selectReposError);
-  const hasMore = useSelector(selectHasMoreRepos);
-  const currentPage = useSelector(selectCurrentPage);
-  const lastAttemptedPage = useSelector(selectLastAttemptedPage);
-  const rateLimitResetTime = useSelector(selectRateLimitResetTime);
+  const repos: Repository[] = useSelector(selectAllRepos);
+  const status: 'idle' | 'loading' | 'succeeded' | 'failed' = useSelector(selectReposStatus);
+  const error: string | null = useSelector(selectReposError);
+  const hasMore: boolean = useSelector(selectHasMoreRepos);
+  const currentPage: number = useSelector(selectCurrentPage);
+  const lastAttemptedPage: number = useSelector(selectLastAttemptedPage);
+  const rateLimitResetTime: number | null = useSelector(selectRateLimitResetTime);
 
   // Local state management
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
-  const virtuosoRef = useRef<any>(null);
+  const [initialLoadDone, setInitialLoadDone] = useState<boolean>(false);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
 
   /**
    * Handles retry logic when rate limit expires
    */
-  const handleRetry = useCallback(() => {
+  const handleRetry = useCallback((): void => {
     dispatch(clearError());
     dispatch(fetchTrendingRepos(lastAttemptedPage));
   }, [dispatch, lastAttemptedPage]);
@@ -78,7 +79,7 @@ function Trending() {
       return;
     }
 
-    const updateTimer = () => {
+    const updateTimer = (): void => {
       const now = Date.now();
       const timeRemaining = Math.max(0, Math.ceil((rateLimitResetTime - now) / 1000));
       setTimeLeft(timeRemaining);
@@ -118,7 +119,7 @@ function Trending() {
   /**
    * Handle keyboard navigation
    */
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent): void => {
     if (!virtuosoRef.current || error) return;
 
     const scrollAmount = 300; // pixels to scroll per key press
@@ -172,7 +173,7 @@ function Trending() {
         <Virtuoso
           ref={virtuosoRef}
           data={repos}
-          itemContent={(_index, repo) => <TrendingItem repo={repo} />}
+          itemContent={(_index: number, repo: Repository) => <TrendingItem repo={repo} />}
           endReached={() => {
             if (hasMore && status !== 'loading') {
               dispatch(fetchTrendingRepos(currentPage));
