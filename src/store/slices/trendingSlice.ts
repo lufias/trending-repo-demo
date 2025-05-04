@@ -42,6 +42,9 @@ export const fetchTrendingRepos = createAsyncThunk<
         `https://api.github.com/search/repositories?q=created:>2024-07-15&sort=stars&order=desc&page=${page}`
       );
 
+      // Add 2 second delay after successful fetch
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
       const state = getState();
       const existingRepos = state.trending.allRepos;
       const existingIds = new Set(existingRepos.map(repo => repo.id));
