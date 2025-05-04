@@ -140,11 +140,16 @@ function Trending() {
           }}
           overscan={200}
           style={{ height: '100%', width: '100%' }}
+          components={{
+            Footer: () => (
+              status === 'loading' && repos.length > 0 ? (
+                <div className="flex items-center justify-center h-16 text-gray-500">
+                  Loading more repositories...
+                </div>
+              ) : null
+            )
+          }}
         />
-        {/* Loading More Indicator */}
-        {status === 'loading' && repos.length > 0 && (
-          <div className="p-4 text-center text-gray-500">Loading more repositories...</div>
-        )}
       </div>
     </div>
   );
