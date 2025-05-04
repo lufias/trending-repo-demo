@@ -17,11 +17,11 @@ const Layout: FC = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Wrapper for max-width constraint */}
-      <div className="mx-auto min-w-[320px] max-w-[480px] flex flex-col min-h-screen relative bg-white">
+      <div className="mx-auto min-w-[320px] max-w-[480px] flex flex-col min-h-screen relative bg-white px-2 sm:px-0">
         {/* Header */}
         <header className="bg-white shadow-sm sticky top-0 z-10">
           <div className="p-4">
-            <h1 className="text-2xl font-bold text-center">Trending Repos</h1>
+            <h1 className="text-lg sm:text-2xl font-bold text-center">Trending Repos</h1>
           </div>
         </header>
 
@@ -47,7 +47,7 @@ const Layout: FC = () => {
               <Link 
                 key={route.path}
                 to={route.path} 
-                className={`flex flex-col items-center p-4 flex-1 ${
+                className={`flex flex-col items-center p-3 sm:p-4 flex-1 ${
                   location.pathname === route.path ? 'text-blue-500' : 'text-gray-500'
                 }`}
               >

@@ -43,8 +43,8 @@ const Toast: FC<ToastProps> = ({
   const positionClass = position === 'top' ? `top-${offset}` : `bottom-${offset}`;
 
   return (
-    <div className={`fixed left-1/2 transform -translate-x-1/2 z-[9999] ${positionClass}`}>
-      <div className={`${variantStyles[variant]} backdrop-blur-sm text-white px-4 py-2 rounded-lg shadow-lg border`}>
+    <div className={`fixed left-1/2 transform -translate-x-1/2 z-[9999] ${positionClass}`} data-testid="toast">
+      <div className={`${variantStyles[variant]} backdrop-blur-sm text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-lg border text-sm sm:text-base max-w-[90vw] sm:max-w-xs whitespace-nowrap`}>
         {message}
       </div>
     </div>
