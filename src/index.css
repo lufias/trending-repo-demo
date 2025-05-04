@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide scrollbar for Virtuoso list */
+.virtuoso-scroll-hide .virtuoso-scroller {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.virtuoso-scroll-hide .virtuoso-scroller::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+  width: 20px;
+}
+.virtuoso-scroll-hide [data-virtuoso-scroller="true"]::-webkit-scrollbar {
+ display: none;
+}

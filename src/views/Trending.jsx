@@ -26,8 +26,9 @@
  *    - Loading indicators for initial load and loading more
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Virtuoso } from 'react-virtuoso';
 import { 
   fetchTrendingRepos, 
   selectAllRepos, 
@@ -53,18 +54,11 @@ function Trending() {
   const lastAttemptedPage = useSelector(selectLastAttemptedPage);
   const rateLimitResetTime = useSelector(selectRateLimitResetTime);
 
-  // Refs for managing component lifecycle and state
-  const observer = useRef(); // IntersectionObserver instance
-  const loadingTimeout = useRef(); // Timeout for loading more items
-  const initialFetchDone = useRef(false); // Flag for initial data fetch
-
   // Local state management
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
 
   /**
    * Handles retry logic when rate limit expires
-   * Clears error state and attempts to fetch data again
    */
   const handleRetry = useCallback(() => {
     dispatch(clearError());
@@ -73,11 +67,6 @@ function Trending() {
 
   /**
    * Rate Limit Timer Effect
-   * 
-   * Manages the countdown timer for rate limit expiration
-   * - Updates timeLeft state every second
-   * - Auto-retries when timer reaches 0
-   * - Cleans up interval on unmount
    */
   useEffect(() => {
     if (!rateLimitResetTime) {
@@ -103,62 +92,20 @@ function Trending() {
 
   /**
    * Initial Data Fetch Effect
-   * 
-   * Fetches first page of trending repositories on component mount
-   * Uses a ref to ensure it only runs once
    */
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true;
-      dispatch(fetchTrendingRepos(1));
-    }
+    dispatch(fetchTrendingRepos(1));
   }, [dispatch]);
 
   /**
-   * Infinite Scroll Implementation
-   * 
-   * Uses IntersectionObserver to detect when user reaches bottom of list
-   * - Creates observer instance
-   * - Handles loading more items with delay
-   * - Manages loading states
-   * - Cleans up observer on unmount
-   */
-  const lastRepoElementRef = useCallback(node => {
-    if (status === 'loading' || isLoadingMore || status === 'failed') return;
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        if (loadingTimeout.current) {
-          clearTimeout(loadingTimeout.current);
-        }
-        setIsLoadingMore(true);
-        loadingTimeout.current = setTimeout(() => {
-          dispatch(fetchTrendingRepos(currentPage));
-          setIsLoadingMore(false);
-        }, 500);
-      }
-    });
-    
-    if (node) observer.current.observe(node);
-  }, [status, hasMore, dispatch, isLoadingMore, currentPage]);
-
-  /**
-   * Cleanup Effect
-   * 
-   * Cleans up timeouts and observer on component unmount
-   * Prevents memory leaks and unnecessary operations
+   * Load More Effect
+   * Fetches more repositories when user reaches bottom of the list
    */
   useEffect(() => {
-    return () => {
-      if (loadingTimeout.current) {
-        clearTimeout(loadingTimeout.current);
-      }
-      if (observer.current) {
-        observer.current.disconnect();
-      }
-    };
-  }, []);
+    if (status === 'idle' && hasMore) {
+      dispatch(fetchTrendingRepos(currentPage));
+    }
+  }, [status, hasMore, dispatch, currentPage]);
 
   // Show loading state for initial fetch
   if (status === 'loading' && repos.length === 0) {
@@ -177,19 +124,21 @@ function Trending() {
       )}
 
       {/* Main Content Area */}
-      <div className={`p-4 space-y-4 pb-20 ${error ? 'pointer-events-none' : ''}`}>
-        {/* Repository List */}
-        {repos.map((repo, index) => (
-          <TrendingItem
-            key={repo.id}
-            repo={repo}
-            lastRepoElementRef={index === repos.length - 1 ? lastRepoElementRef : null}
-          />
-        ))}
-        
+      <div className={`p-4 virtuoso-scroll-hide ${error ? 'pointer-events-none' : ''}`} style={{ height: `calc(100vh - 100px)` }}>
+        <Virtuoso
+          data={repos}
+          itemContent={(index, repo) => <TrendingItem repo={repo} />}
+          endReached={() => {
+            if (hasMore && status !== 'loading') {
+              dispatch(fetchTrendingRepos(currentPage));
+            }
+          }}
+          overscan={200}
+          style={{ height: '100%', width: '100%' }}
+        />
         {/* Loading More Indicator */}
-        {isLoadingMore && (
-          <div className="p-4 text-center text-gray-500 mb-20">Loading more repositories...</div>
+        {status === 'loading' && repos.length > 0 && (
+          <div className="p-4 text-center text-gray-500">Loading more repositories...</div>
         )}
       </div>
     </div>
