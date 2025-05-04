@@ -43,6 +43,7 @@ import {
 } from '../store/slices/trendingSlice.ts';
 import RateLimitErrorModal from '../components/Trending/RateLimitErrorModal';
 import TrendingItem from '../components/Trending/TrendingItem';
+import Toast from '../components/Toast';
 
 function Trending() {
   // Redux state management
@@ -128,6 +129,15 @@ function Trending() {
         />
       )}
 
+      {/* Loading Toast */}
+      <Toast 
+        message="Loading more repositories..." 
+        show={status === 'loading' && repos.length > 0}
+        position="bottom"
+        offset={24}
+        variant="default"
+      />
+
       {/* Main Content Area */}
       <div className={`p-4 virtuoso-scroll-hide ${error ? 'pointer-events-none' : ''}`} style={{ height: `calc(100vh - 100px)` }}>
         <Virtuoso
@@ -140,15 +150,6 @@ function Trending() {
           }}
           overscan={200}
           style={{ height: '100%', width: '100%' }}
-          components={{
-            Footer: () => (
-              status === 'loading' && repos.length > 0 ? (
-                <div className="flex items-center justify-center h-16 text-gray-500">
-                  Loading more repositories...
-                </div>
-              ) : null
-            )
-          }}
         />
       </div>
     </div>

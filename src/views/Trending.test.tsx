@@ -35,6 +35,13 @@ vi.mock('../components/Trending/TrendingItem', () => ({
   )
 }))
 
+// Mock the Toast component
+vi.mock('../components/Toast', () => ({
+  default: ({ message, show }: { message: string; show: boolean }) => (
+    show ? <div data-testid="toast">{message}</div> : null
+  )
+}))
+
 describe('Trending Component', () => {
   let store: any
 
@@ -198,6 +205,32 @@ describe('Trending Component', () => {
       </Provider>
     )
 
-    expect(screen.getByText('Loading more repositories...')).toBeInTheDocument()
+    expect(screen.getByTestId('toast')).toHaveTextContent('Loading more repositories...')
+  })
+
+  it('does not show loading toast when there are no repositories', () => {
+    store = configureStore({
+      reducer: {
+        trending: trendingReducer
+      },
+      preloadedState: {
+        trending: {
+          allRepos: [],
+          currentPage: 1,
+          lastAttemptedPage: 1,
+          status: 'loading' as const,
+          error: null,
+          rateLimitResetTime: null
+        }
+      }
+    })
+
+    render(
+      <Provider store={store}>
+        <Trending />
+      </Provider>
+    )
+
+    expect(screen.queryByTestId('toast')).not.toBeInTheDocument()
   })
 }) 
