@@ -1,10 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './slices/userSlice.ts';
 import trendingReducer from './slices/trendingSlice.ts';
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
     trending: trendingReducer,
   },
   middleware: (getDefaultMiddleware) =>
