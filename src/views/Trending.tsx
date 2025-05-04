@@ -57,6 +57,7 @@ function Trending() {
 
   // Local state management
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   /**
    * Handles retry logic when rate limit expires
@@ -93,17 +94,21 @@ function Trending() {
 
   /**
    * Initial Data Fetch Effect
+   * Only fetch if we haven't loaded any data yet
    */
   useEffect(() => {
-    dispatch(fetchTrendingRepos(1));
-  }, [dispatch]);
+    if (!initialLoadDone && repos.length === 0) {
+      dispatch(fetchTrendingRepos(1));
+      setInitialLoadDone(true);
+    }
+  }, [dispatch, repos.length, initialLoadDone]);
 
   /**
    * Load More Effect
    * Fetches more repositories when user reaches bottom of the list
    */
   useEffect(() => {
-    if (status === 'idle' && hasMore) {
+    if (status === 'idle' && hasMore && currentPage > 1) {
       dispatch(fetchTrendingRepos(currentPage));
     }
   }, [status, hasMore, dispatch, currentPage]);
