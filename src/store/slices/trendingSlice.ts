@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import moment from 'moment';
 
 interface Repository {
   id: number;
@@ -39,7 +40,7 @@ export const fetchTrendingRepos = createAsyncThunk<
   async (page = 1, { rejectWithValue, getState }) => {
     try {
       const response = await axios.get<{ items: Repository[] }>(
-        `https://api.github.com/search/repositories?q=created:>2024-07-15&sort=stars&order=desc&page=${page}`
+        `https://api.github.com/search/repositories?q=created:>${moment().subtract(10, 'days').format('YYYY-MM-DD')}&sort=stars&order=desc&page=${page}`
       );
 
       // Add 2 second delay after successful fetch
