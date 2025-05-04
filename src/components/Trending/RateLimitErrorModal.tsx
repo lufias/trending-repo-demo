@@ -1,6 +1,11 @@
-import React from 'react';
+import type { FC } from 'react';
 
-function RateLimitErrorModal({ error, timeLeft, onRetry }) {
+interface RateLimitErrorModalProps {
+  timeLeft: number | null;
+  onRetry: () => void;
+}
+
+const RateLimitErrorModal: FC<RateLimitErrorModalProps> = ({ timeLeft, onRetry }) => {
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40" />
@@ -21,7 +26,7 @@ function RateLimitErrorModal({ error, timeLeft, onRetry }) {
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
                       Looks like we're getting a bit too excited! GitHub needs a quick breather before showing more awesome repositories.
-                      {timeLeft > 0 && (
+                      {timeLeft !== null && timeLeft > 0 && (
                         <span className="block mt-2 font-medium">
                           We can continue exploring in {timeLeft} seconds
                         </span>
@@ -35,14 +40,14 @@ function RateLimitErrorModal({ error, timeLeft, onRetry }) {
               <button
                 type="button"
                 onClick={onRetry}
-                disabled={timeLeft > 0}
+                disabled={timeLeft !== null && timeLeft > 0}
                 className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto ${
-                  timeLeft > 0 
+                  timeLeft !== null && timeLeft > 0 
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-blue-600 hover:bg-blue-500'
                 }`}
               >
-                {timeLeft > 0 ? 'Taking a breather...' : 'Let\'s continue!'}
+                {timeLeft !== null && timeLeft > 0 ? 'Taking a breather...' : 'Let\'s continue!'}
               </button>
             </div>
           </div>

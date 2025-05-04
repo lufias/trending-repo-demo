@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { RootState } from '../index';
 
 interface Repository {
   id: number;
@@ -10,6 +9,10 @@ interface Repository {
   stargazers_count: number;
   language: string | null;
   html_url: string;
+  owner: {
+    avatar_url: string;
+    login: string;
+  };
 }
 
 interface TrendingState {
@@ -30,7 +33,7 @@ interface FetchResponse {
 export const fetchTrendingRepos = createAsyncThunk<
   FetchResponse,
   number,
-  { state: RootState; rejectValue: { message: string; resetTime?: number; page: number } }
+  { state: { trending: TrendingState }; rejectValue: { message: string; resetTime?: number; page: number } }
 >(
   'trending/fetchTrendingRepos',
   async (page = 1, { rejectWithValue, getState }) => {
@@ -39,7 +42,8 @@ export const fetchTrendingRepos = createAsyncThunk<
         `https://api.github.com/search/repositories?q=created:>2024-07-15&sort=stars&order=desc&page=${page}`
       );
 
-      const existingRepos = getState().trending.allRepos;
+      const state = getState();
+      const existingRepos = state.trending.allRepos;
       const existingIds = new Set(existingRepos.map(repo => repo.id));
       const newItems = response.data.items.filter(item => !existingIds.has(item.id));
 
@@ -110,12 +114,12 @@ const trendingSlice = createSlice({
 export const { resetRepos, clearError } = trendingSlice.actions;
 
 // Selectors
-export const selectAllRepos = (state: RootState) => state.trending.allRepos;
-export const selectReposStatus = (state: RootState) => state.trending.status;
-export const selectReposError = (state: RootState) => state.trending.error;
-export const selectCurrentPage = (state: RootState) => state.trending.currentPage;
-export const selectLastAttemptedPage = (state: RootState) => state.trending.lastAttemptedPage;
-export const selectRateLimitResetTime = (state: RootState) => state.trending.rateLimitResetTime;
-export const selectHasMoreRepos = (state: RootState) => state.trending.allRepos.length > 0;
+export const selectAllRepos = (state: { trending: TrendingState }) => state.trending.allRepos;
+export const selectReposStatus = (state: { trending: TrendingState }) => state.trending.status;
+export const selectReposError = (state: { trending: TrendingState }) => state.trending.error;
+export const selectCurrentPage = (state: { trending: TrendingState }) => state.trending.currentPage;
+export const selectLastAttemptedPage = (state: { trending: TrendingState }) => state.trending.lastAttemptedPage;
+export const selectRateLimitResetTime = (state: { trending: TrendingState }) => state.trending.rateLimitResetTime;
+export const selectHasMoreRepos = (state: { trending: TrendingState }) => state.trending.allRepos.length > 0;
 
 export default trendingSlice.reducer; 

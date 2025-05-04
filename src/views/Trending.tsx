@@ -29,6 +29,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Virtuoso } from 'react-virtuoso';
+import { AppDispatch } from '../store';
 import { 
   fetchTrendingRepos, 
   selectAllRepos, 
@@ -39,13 +40,13 @@ import {
   selectLastAttemptedPage,
   selectRateLimitResetTime,
   clearError
-} from '../store/slices/trendingSlice';
+} from '../store/slices/trendingSlice.ts';
 import RateLimitErrorModal from '../components/Trending/RateLimitErrorModal';
 import TrendingItem from '../components/Trending/TrendingItem';
 
 function Trending() {
   // Redux state management
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const repos = useSelector(selectAllRepos);
   const status = useSelector(selectReposStatus);
   const error = useSelector(selectReposError);
@@ -55,7 +56,7 @@ function Trending() {
   const rateLimitResetTime = useSelector(selectRateLimitResetTime);
 
   // Local state management
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   /**
    * Handles retry logic when rate limit expires
@@ -117,7 +118,6 @@ function Trending() {
       {/* Rate Limit Error Modal */}
       {error && (
         <RateLimitErrorModal 
-          error={error}
           timeLeft={timeLeft}
           onRetry={handleRetry}
         />
@@ -127,7 +127,7 @@ function Trending() {
       <div className={`p-4 virtuoso-scroll-hide ${error ? 'pointer-events-none' : ''}`} style={{ height: `calc(100vh - 100px)` }}>
         <Virtuoso
           data={repos}
-          itemContent={(index, repo) => <TrendingItem repo={repo} />}
+          itemContent={(_index, repo) => <TrendingItem repo={repo} />}
           endReached={() => {
             if (hasMore && status !== 'loading') {
               dispatch(fetchTrendingRepos(currentPage));

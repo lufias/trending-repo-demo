@@ -1,7 +1,24 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 
-function TrendingItem({ repo, lastRepoElementRef }) {
+interface Repository {
+  owner: {
+    avatar_url: string;
+    login: string;
+  };
+  html_url: string;
+  full_name: string;
+  description: string | null;
+  stargazers_count: number;
+  topics?: string[];
+}
+
+interface TrendingItemProps {
+  repo: Repository;
+  lastRepoElementRef?: ((node: HTMLDivElement | null) => void) | null;
+}
+
+function TrendingItem({ repo, lastRepoElementRef = null }: TrendingItemProps) {
   return (
     <div 
       ref={lastRepoElementRef}

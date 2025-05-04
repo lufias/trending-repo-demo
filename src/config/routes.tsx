@@ -5,8 +5,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 // Lazy load components
-const Trending = lazy(() => import('../views/Trending'));
-const Settings = lazy(() => import('../views/Settings'));
+const Trending = lazy(() => import('../views/Trending.tsx'));
+const Settings = lazy(() => import('../views/Settings.tsx'));
 
 export const routes = [
   {
