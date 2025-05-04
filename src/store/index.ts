@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import trendingReducer from './slices/trendingSlice.ts';
+import settingsReducer from './slices/settingsSlice';
 
 export const store = configureStore({
   reducer: {
     trending: trendingReducer,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

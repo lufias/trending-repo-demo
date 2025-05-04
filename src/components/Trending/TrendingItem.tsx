@@ -1,5 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { useSelector } from 'react-redux';
+import { selectTrendingItemSettings } from '../../store/slices/settingsSlice';
 
 interface Repository {
   owner: {
@@ -19,6 +21,8 @@ interface TrendingItemProps {
 }
 
 function TrendingItem({ repo, lastRepoElementRef = null }: TrendingItemProps) {
+  const settings = useSelector(selectTrendingItemSettings);
+  
   // Color palette for tag backgrounds
   const tagColors = [
     'bg-blue-100 text-blue-600',
@@ -38,24 +42,30 @@ function TrendingItem({ repo, lastRepoElementRef = null }: TrendingItemProps) {
           {repo.full_name}
         </a>
       </h3>
-      <p className="text-gray-800 mt-2 text-left text-base font-normal">
-        {repo.description || 'No description available'}
-      </p>
+      {settings.showDescription && (
+        <p className="text-gray-800 mt-2 text-left text-base font-normal">
+          {repo.description || 'No description available'}
+        </p>
+      )}
       <div className="flex items-center justify-between mt-4">
-        <div className="flex items-center">
-          <img 
-            src={repo.owner.avatar_url} 
-            alt={repo.owner.login}
-            className="w-8 h-8 rounded bg-gray-200 mr-2"
-          />
-          <span className="text-gray-800 font-medium text-base">{repo.owner.login}</span>
-        </div>
-        <div className="flex items-center font-bold text-lg">
-          <FontAwesomeIcon icon={faStar} className="mr-1 text-yellow-500" />
-          <span className="text-gray-700">{repo.stargazers_count.toLocaleString()}</span>
-        </div>
+        {settings.showAvatar && (
+          <div className="flex items-center">
+            <img 
+              src={repo.owner.avatar_url} 
+              alt={repo.owner.login}
+              className="w-8 h-8 rounded bg-gray-200 mr-2"
+            />
+            <span className="text-gray-800 font-medium text-base">{repo.owner.login}</span>
+          </div>
+        )}
+        {settings.showStars && (
+          <div className="flex items-center font-bold text-lg">
+            <FontAwesomeIcon icon={faStar} className="mr-1 text-yellow-500" />
+            <span className="text-gray-700">{repo.stargazers_count.toLocaleString()}</span>
+          </div>
+        )}
       </div>
-      {repo.topics && repo.topics.length > 0 && (
+      {settings.showTags && repo.topics && repo.topics.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {repo.topics.slice(0, 3).map((topic, idx) => (
             <span 
