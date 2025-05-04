@@ -1,4 +1,4 @@
-import { lazy, LazyExoticComponent, FC } from 'react';
+import { lazy } from 'react';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { 
   faStar, 
@@ -7,7 +7,7 @@ import {
 
 interface RouteConfig {
   path: string;
-  element: LazyExoticComponent<FC>;
+  element: React.ReactNode;
   label: string;
   icon: IconDefinition;
 }
@@ -19,13 +19,13 @@ const Settings = lazy(() => import('../views/Settings.tsx'));
 export const routes: RouteConfig[] = [
   {
     path: '/',
-    element: Trending,
+    element: <Trending />,
     label: 'Trending',
     icon: faStar
   },
   {
     path: '/settings',
-    element: Settings,
+    element: <Settings />,
     label: 'Settings',
     icon: faCog
   }
