@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide scrollbar for Virtuoso list */
+.virtuoso-scroll-hide {
+  [data-virtuoso-scroller="true"]::-webkit-scrollbar {
+    display: none;
+  }
+} 
