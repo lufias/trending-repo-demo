@@ -16,7 +16,7 @@ export interface Repository {
   };
 }
 
-interface TrendingState {
+export interface TrendingState {
   allRepos: Repository[];
   currentPage: number;
   lastAttemptedPage: number;
