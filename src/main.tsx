@@ -5,7 +5,7 @@ import { store } from './store/index'
 import './index.scss'
 import App from './App'
 
-const rootElement = document.getElementById('root')
+const rootElement: HTMLElement | null = document.getElementById('root')
 if (!rootElement) throw new Error('Failed to find the root element')
 
 createRoot(rootElement).render(

@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FC } from 'react';
+
+type ToastVariant = 'default' | 'success' | 'error' | 'warning';
 
 interface ToastProps {
   message: string;
@@ -6,25 +8,25 @@ interface ToastProps {
   duration?: number;
   position?: 'top' | 'bottom';
   offset?: number;
-  variant?: 'default' | 'success' | 'error' | 'warning';
+  variant?: ToastVariant;
 }
 
-const variantStyles = {
+const variantStyles: Record<ToastVariant, string> = {
   default: 'bg-blue-500/90 border-blue-400/50',
   success: 'bg-green-500/90 border-green-400/50',
   error: 'bg-red-500/90 border-red-400/50',
   warning: 'bg-yellow-500/90 border-yellow-400/50'
 };
 
-function Toast({ 
+const Toast: FC<ToastProps> = ({ 
   message, 
   show, 
   duration = 3000,
   position = 'bottom',
   offset = 24,
   variant = 'default'
-}: ToastProps) {
-  const [visible, setVisible] = useState(false);
+}) => {
+  const [visible, setVisible] = useState<boolean>(false);
 
   useEffect(() => {
     if (show) {

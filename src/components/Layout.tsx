@@ -1,9 +1,17 @@
 import { Link, useLocation, Routes, Route } from 'react-router-dom';
-import { Suspense } from 'react';
+import { Suspense, FC } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { routes } from '../config/routes.jsx';
 
-function Layout() {
+interface RouteConfig {
+  path: string;
+  element: React.ReactNode;
+  icon?: IconDefinition;
+  label: string;
+}
+
+const Layout: FC = () => {
   const location = useLocation();
 
   return (
@@ -25,7 +33,7 @@ function Layout() {
             </div>
           }>
             <Routes>
-              {routes.map((route) => (
+              {routes.map((route: RouteConfig) => (
                 <Route key={route.path} path={route.path} element={route.element} />
               ))}
             </Routes>
@@ -35,7 +43,7 @@ function Layout() {
         {/* Bottom Navigation */}
         <nav className="bg-white border-t sticky bottom-0 z-10">
           <div className="flex justify-around">
-            {routes.map((route) => (
+            {routes.map((route: RouteConfig) => (
               <Link 
                 key={route.path}
                 to={route.path} 

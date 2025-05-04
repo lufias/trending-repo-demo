@@ -1,11 +1,20 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../store';
 import { toggleTrendingItemSetting, selectTrendingItemSettings } from '../store/slices/settingsSlice';
+import { FC } from 'react';
 
-function Settings() {
-  const dispatch = useDispatch();
-  const settings = useSelector(selectTrendingItemSettings);
+interface TrendingItemSettings {
+  showAvatar: boolean;
+  showTags: boolean;
+  showDescription: boolean;
+  showStars: boolean;
+}
 
-  const handleToggle = (setting: keyof typeof settings) => {
+const Settings: FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const settings: TrendingItemSettings = useSelector(selectTrendingItemSettings);
+
+  const handleToggle = (setting: keyof TrendingItemSettings): void => {
     dispatch(toggleTrendingItemSetting(setting));
   };
 

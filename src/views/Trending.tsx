@@ -26,7 +26,7 @@
  *    - Loading indicators for initial load and loading more
  */
 
-import { useEffect, useCallback, useState, useRef } from 'react';
+import { useEffect, useCallback, useState, useRef, FC } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 import { AppDispatch } from '../store';
@@ -46,7 +46,7 @@ import RateLimitErrorModal from '../components/Trending/RateLimitErrorModal';
 import TrendingItem from '../components/Trending/TrendingItem';
 import Toast from '../components/Toast';
 
-function Trending() {
+const Trending: FC = () => {
   // Redux state management
   const dispatch = useDispatch<AppDispatch>();
   const repos: Repository[] = useSelector(selectAllRepos);

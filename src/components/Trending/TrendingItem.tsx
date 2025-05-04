@@ -2,6 +2,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { useSelector } from 'react-redux';
 import { selectTrendingItemSettings } from '../../store/slices/settingsSlice';
+import { FC } from 'react';
 
 interface Repository {
   owner: {
@@ -20,7 +21,7 @@ interface TrendingItemProps {
   lastRepoElementRef?: ((node: HTMLDivElement | null) => void) | null;
 }
 
-function TrendingItem({ repo, lastRepoElementRef = null }: TrendingItemProps) {
+const TrendingItem: FC<TrendingItemProps> = ({ repo, lastRepoElementRef = null }) => {
   const settings = useSelector(selectTrendingItemSettings);
   
   // Color palette for tag backgrounds
@@ -32,6 +33,7 @@ function TrendingItem({ repo, lastRepoElementRef = null }: TrendingItemProps) {
     'bg-purple-100 text-purple-600',
     'bg-red-100 text-red-600',
   ];
+
   return (
     <div 
       ref={lastRepoElementRef}
